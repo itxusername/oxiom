@@ -1,60 +1,149 @@
-// Simulated PNL data for wallet 26fVqwyuQn6v1GmPtnN7mTBmNPoWiktNxCcUdQKaFAwW (Grok AI trading example)
-// Based on screenshot trends: Cumulative profit over time (flat start, sharp rise to +0.8654 SOL equivalent)
-// Timestamps: Oct 21-22, 2025; Values in USD (scaled; real data from Solscan would require transaction parsing)
-// Note: Free API limits prevent real-time PNL; this is a simulation based on UI trends
-const pnlData = {
-    labels: ['Oct 21 05:49 PM', '', '', 'Oct 22 12:14 AM'],
-    datasets: [{
-        label: 'Grok AI Wallet PNL (SOL)',
-        data: [80, 80, 160, 280.08],  // Simulated: Low start, pump to high profit
-        borderColor: '#00ff85',
-        backgroundColor: 'rgba(0, 255, 133, 0.1)',
-        tension: 0.1,
-        fill: true
-    }]
-};
-
-// Initialize Chart
-document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('pnlChart').getContext('2d');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'line',
-            data: pnlData,
-            options: {
-                responsive: true,
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        ticks: { callback: function(value) { return '$' + value; } }
-                    },
-                    x: { grid: { display: false } }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
-    } else {
-        console.error('Canvas element not found for PNL chart');
-    }
-});
-
-// Dynamic price fetching for SOL (Dexscreener free API)
-const solMint = 'So11111111111111111111111111111111111111112';
-
-async function fetchSolPrice() {
-    try {
-        const resp = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${solMint}`);
-        if (!resp.ok) throw new Error('API response not OK');
-        const data = await resp.json();
-        const pair = data.pairs?.[0] || {};
-        const priceUsd = pair.priceUsd || 'N/A';
-        document.getElementById('sol-price').innerText = `$${priceUsd}`;
-    } catch (e) {
-        console.error('Error fetching SOL price:', e);
-        document.getElementById('sol-price').innerText = 'Error loading price';
-    }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+    color: #333;
 }
 
-// Fetch on load and every 60 seconds
-fetchSolPrice();
-setInterval(fetchSolPrice, 60000);
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    color: #6a1b9a;
+    margin: 0;
+}
+
+.header button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.box {
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
+}
+
+.sol-box {
+    background: linear-gradient(135deg, #00b4ff, #ff00ff);
+}
+
+.claude-box {
+    background: linear-gradient(135deg, #ff7e00, #ffd500);
+}
+
+.grok-box {
+    background: linear-gradient(135deg, #00ff85, #00b4ff);
+}
+
+.gpt-box {
+    background: linear-gradient(135deg, #00ff00, #ffd500);
+}
+
+.price {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.change {
+    font-size: 16px;
+}
+
+.positive {
+    color: #00ff00;
+}
+
+.negative {
+    color: #ff0000;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+}
+
+.legend-color {
+    width: 20px;
+    height: 3px;
+    margin-right: 5px;
+}
+
+.claude-color {
+    background: #ff7e00;
+}
+
+.grok-color {
+    background: #00ff85;
+}
+
+.gpt-color {
+    background: #00ff00;
+}
+
+.chart-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.now-marker {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    background: #000;
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+.current-value {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #000;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.sol-star {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffd500;
+    color: #000;
+    padding: 2px 5px;
+    border-radius: 20px;
+    font-size: 12px;
+}

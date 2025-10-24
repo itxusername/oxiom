@@ -4,25 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oxiom Grok AI Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px; color: #333; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header h1 { color: #6a1b9a; margin: 0; }
-        .header button { background-color: #000; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .box { padding: 15px; border-radius: 8px; color: #fff; text-align: center; }
-        .sol-box { background: linear-gradient(135deg, #00b4ff, #ff00ff); }
-        .grok-box { background: linear-gradient(135deg, #00ff85, #00b4ff); }
-        .price { font-size: 24px; font-weight: bold; }
-        .change { font-size: 16px; }
-        .positive { color: #00ff00; }
-        .negative { color: #ff0000; }
-        .chart-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
-        .now-marker { position: absolute; top: 50%; right: 10px; background: #000; color: #fff; padding: 2px 5px; border-radius: 50%; font-size: 12px; }
-        .current-value { position: absolute; top: 10px; right: 10px; background: #00ff85; color: #000; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
-        .sol-star { position: absolute; bottom: 10px; left: 10px; background: #ff00ff; color: #fff; padding: 2px 5px; border-radius: 50%; font-size: 12px; }
-    </style>
 </head>
 <body>
     <div class="header">
@@ -36,11 +19,27 @@
             <div>SOL PRICE</div>
             <div class="price" id="sol-price">Loading...</div>
         </div>
+        <div class="box placeholder-box">
+            <div>CLAUDE SONNET 4.5</div>
+            <div class="price">$88.06 0.4628SOL</div>
+            <div class="change negative">-7.44% (0.0372SOL)</div>
+        </div>
         <div class="box grok-box">
             <div>Grok AI Model</div>
             <div class="price" id="grok-price">$280.08 1.3654SOL</div>
             <div class="change positive" id="grok-change">+194.38% (+0.8654SOL)</div>
         </div>
+        <div class="box placeholder-box">
+            <div>GPT 5</div>
+            <div class="price">$69.37 0.3646SOL</div>
+            <div class="change negative">-27.09% (0.1354SOL)</div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background: #ff7e00;"></div>CLAUDE SONNET 4.5</div>
+        <div class="legend-item"><div class="legend-color" style="background: #00ff85;"></div>GROK AI Model</div>
+        <div class="legend-item"><div class="legend-color" style="background: #00ff00;"></div>GPT 5</div>
     </div>
     
     <div class="chart-container">
@@ -50,65 +49,6 @@
         <canvas id="pnlChart"></canvas>
     </div>
     
-    <script>
-        // Simulated PNL data for wallet 26fVqwyuQn6v1GmPtnN7mTBmNPoWiktNxCcUdQKaFAwW (Grok AI trading example)
-        // Based on screenshot trends: Cumulative profit over time (flat start, sharp rise to +0.8654 SOL equivalent)
-        // Timestamps: Oct 21-22, 2025; Values in USD (scaled; real data unavailable via free APIs)
-        // Note: This is placeholder—real PNL requires transaction parsing (e.g., via Helius API with key)
-        const pnlData = {
-            labels: ['Oct 21 05:49 PM', '', '', 'Oct 22 12:14 AM'],
-            datasets: [{
-                label: 'Grok AI Wallet PNL (SOL)',
-                data: [80, 80, 160, 280.08],  // Simulated: Low start, pump to high profit
-                borderColor: '#00ff85',
-                backgroundColor: 'rgba(0, 255, 133, 0.1)',
-                tension: 0.1,
-                fill: true
-            }]
-        };
-
-        const ctx = document.getElementById('pnlChart').getContext('2d');
-        if (ctx) {  // Ensure canvas exists
-            new Chart(ctx, {
-                type: 'line',
-                data: pnlData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            ticks: { callback: function(value) { return '$' + value; } }
-                        },
-                        x: { grid: { display: false } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        } else {
-            console.error('Canvas element not found for PNL chart');
-        }
-
-        // Dynamic price fetching for SOL (Dexscreener free API)
-        // Removed Grok memecoin fetch since focus is Grok AI trading model
-        const solMint = 'So11111111111111111111111111111111111111112';
-
-        async function fetchSolPrice() {
-            try {
-                const resp = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${solMint}`);
-                if (!resp.ok) throw new Error('API response not OK');
-                const data = await resp.json();
-                const pair = data.pairs?.[0] || {};
-                const priceUsd = pair.priceUsd || 'N/A';
-                document.getElementById('sol-price').innerText = `$${priceUsd}`;
-            } catch (e) {
-                console.error('Error fetching SOL price:', e);
-                document.getElementById('sol-price').innerText = 'Error loading price';
-            }
-        }
-
-        // Fetch on load and every 60 seconds
-        fetchSolPrice();
-        setInterval(fetchSolPrice, 6000);
-    </script>
+    <script src="script.js" defer></script>
 </body>
 </html>

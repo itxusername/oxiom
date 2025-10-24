@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRIOLET Grok 4 Dashboard</title>
+    <title>Oxiom Grok 4 Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px; color: #333; }
@@ -18,12 +18,15 @@
         .change { font-size: 16px; }
         .positive { color: #00ff00; }
         .negative { color: #ff0000; }
-        .chart-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .chart-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
+        .now-marker { position: absolute; top: 50%; right: 10px; background: #000; color: #fff; padding: 2px 5px; border-radius: 50%; font-size: 12px; }
+        .current-value { position: absolute; top: 10px; right: 10px; background: #00ff85; color: #000; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
+        .sol-star { position: absolute; bottom: 10px; left: 10px; background: #ff00ff; color: #fff; padding: 2px 5px; border-radius: 50%; font-size: 12px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>TRIOLET</h1>
+        <h1>Oxiom</h1>
         <a href="https://x.com" target="_blank"><img src="https://via.placeholder.com/30?text=X" alt="X"></a>
         <button onclick="window.open('https://pump.fun', '_blank')">PUMP.FUN</button>
     </div>
@@ -41,35 +44,49 @@
     </div>
     
     <div class="chart-container">
-        <canvas id="priceChart"></canvas>
+        <div class="now-marker">NOW</div>
+        <div class="current-value" id="current-pnl">$280.08</div>
+        <div class="sol-star">0.9 SOL STAR</div>
+        <canvas id="pnlChart"></canvas>
     </div>
     
     <script>
-        // Hardcoded chart data for Grok 4 from screenshot (Oct 21-22, 2025)
-        const chartData = {
+        // Simulated PNL data for wallet 26fVqwyuQn6v1GmPtnN7mTBmNPoWiktNxCcUdQKaFAwW
+        // Based on screenshot trends: Cumulative SOL profit over time (flat start, sharp rise to +0.8654 SOL)
+        // Timestamps: Oct 21-22, 2025; Values in USD equivalent (scaled to match screenshot y-axis)
+        const pnlData = {
             labels: ['Oct 21 05:49 PM', '', '', 'Oct 22 12:14 AM'],
             datasets: [{
-                label: 'Grok 4',
-                data: [80, 80, 80, 280.08], // Simulated rise to match screenshot
+                label: 'Grok 4 Wallet PNL (SOL)',
+                data: [80, 80, 160, 280.08],  // Simulated: Start low, pump to $280.08 (high PNL)
                 borderColor: '#00ff85',
-                tension: 0.1
+                backgroundColor: 'rgba(0, 255, 133, 0.1)',
+                tension: 0.1,
+                fill: true
             }]
         };
 
-        const ctx = document.getElementById('priceChart').getContext('2d');
+        const ctx = document.getElementById('pnlChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
-            data: chartData,
+            data: pnlData,
             options: {
                 responsive: true,
-                scales: { y: { beginAtZero: true } }
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { callback: function(value) { return '$' + value; } }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }  // Hide legend for clean look
             }
         });
 
         // Dynamic price fetching for SOL and Grok 4 (Dexscreener free API)
         const tokens = {
             sol: 'So11111111111111111111111111111111111111112',
-            grok: 'Ar8FNn4xzrRZnxyi1uTsMCik9rete5UiU18g2B8apump' // Verify on Pump.fun
+            grok: 'Ar8FNn4xzrRZnxyi1uTsMCik9rete5UiU18g2B8apump'  // Verify on Pump.fun
         };
 
         async function fetchPrices() {
@@ -81,13 +98,16 @@
                     const priceUsd = pair.priceUsd || 'N/A';
                     const priceSol = pair.priceNative || 'N/A';
                     const change24h = pair.priceChange?.h24 || 0;
-                    const changeSol = (change24h / 100 * parseFloat(priceSol)) || 0; // Approximate
+                    const changeSol = (change24h / 100 * parseFloat(priceSol)) || 0;
 
-                    document.getElementById(`${key}-price`).innerText = key === 'sol' ? `$${priceUsd}` : `$${priceUsd} ${priceSol}SOL`;
-                    const changeEl = document.getElementById(`${key}-change`);
-                    if (changeEl) {
+                    if (key === 'sol') {
+                        document.getElementById('sol-price').innerText = `$${priceUsd}`;
+                    } else {
+                        document.getElementById('grok-price').innerText = `$${priceUsd} ${priceSol}SOL`;
+                        const changeEl = document.getElementById('grok-change');
                         changeEl.innerText = `${change24h > 0 ? '+' : ''}${change24h.toFixed(2)}% (${changeSol.toFixed(4)}SOL)`;
                         changeEl.className = `change ${change24h > 0 ? 'positive' : 'negative'}`;
+                        document.getElementById('current-pnl').innerText = `$${priceUsd}`;
                     }
                 } catch (e) {
                     console.error(`Error fetching ${key}:`, e);
